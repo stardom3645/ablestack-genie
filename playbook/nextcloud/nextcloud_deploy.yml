@@ -213,14 +213,14 @@
     # Install Httpd
     - name: Install httpd with no update
       ansible.builtin.command:
-        cmd: dnf install --noupdate -y "{{ item }}"
+        cmd: dnf install --nobest -y "{{ item }}"
       loop: "{{ httpd_packages }}"
       become: true
 
     # Install php
     - name: Install php with no update
       ansible.builtin.command:
-        cmd: dnf install --noupdate -y "{{ item }}"
+        cmd: dnf install --nobest -y "{{ item }}"
       loop: "{{ php_packages }}"
       become: true
 
@@ -230,7 +230,7 @@
     # Install Mariadb
     - name: Install mariadb with no update
       ansible.builtin.command:
-        cmd: dnf install --noupdate -y "{{ item }}"
+        cmd: dnf install --nobest -y "{{ item }}"
       loop: "{{ mariadb_packages }}"
       become: true
 
@@ -269,7 +269,7 @@
     # Install Nextcloud
     - name: Install dependencies with no update
       ansible.builtin.command:
-        cmd: dnf install --noupdate -y unzip
+        cmd: dnf install --nobest -y unzip
       become: true
 
     - name: Install Nextcloud
@@ -335,7 +335,7 @@
     # Install Firewall
     - name: Install firewalld with no update
       ansible.builtin.command:
-        cmd: dnf install --noupdate -y firewalld
+        cmd: dnf install --nobest -y firewalld
       become: true
 
     - name: Start firewalld service
