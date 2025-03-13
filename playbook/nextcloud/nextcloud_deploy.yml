@@ -39,6 +39,15 @@
       delay: 20
       timeout: 300
 
+  # - name: 배포한 가상머신 정보 수집
+  #   cs_instance_info:
+  #     api_url: "{{ lookup('env', 'MOLD_API_URL') }}"
+  #     api_key: "{{ lookup('env', 'MOLD_API_KEY') }}"
+  #     api_secret: "{{ lookup('env', 'MOLD_SECRET_KEY') }}"
+  #     name: "{{ instance_nm }}"
+  #   delegate_to: localhost
+  #   register: vm
+
   - name: 배포 가상머신 ip 정보 수집
     debug:
       msg: "{{ vm.default_ip }}"
@@ -135,6 +144,14 @@
         uuid: "{{ uuid }}"
     delegate_to: "{{ lookup('env', 'AC_NETWORK_ADDRESS') }}"
 
+  # - name: 상태체크 job 실행
+  #   awx.awx.job_launch:
+  #     job_template: 넥스트클라우드 - 상태체크 - {{ uuid }}
+  #     controller_host: "http://{{ genie_ip }}:80"
+  #     controller_username: admin
+  #     controller_password: "{{ admin_password.stdout }}"
+  #   delegate_to: "{{ lookup('env', 'AC_NETWORK_ADDRESS') }}"
+
   - name: Genie job 스케줄러 생성
     awx.awx.schedule:
       name: 넥스트클라우드 - 상태체크 - {{ uuid }}
@@ -166,7 +183,9 @@
       - "php-intl"
       - "php-pecl-apcu"
       - "php-mysqlnd"
+      #- "php-pecl-redis"
       - "php-opcache"
+      #- "php-imagick"
       - "php-zip"
       - "php-process"
       - "php-json"
@@ -176,6 +195,7 @@
       - "mariadb-server"
       - "python3-PyMySQL"
     mariadb_root_pass: "password"
+    # nextcloud_code: "https://download.nextcloud.com/server/releases/nextcloud-20.0.9.zip"
     nextcloud_code: "https://images.ablecloud.io/genie/nextcloud/nextcloud-25.0.13.zip"
     nextcloud_db_name: "nextcloud"
     nextcloud_db_user: "nextcloud"
@@ -191,32 +211,27 @@
         line: "{{ lookup('env', 'AC_PUB_KEY') }}"
 
     # Install Httpd
-    - name: Install httpd
-      ansible.builtin.package:
-        name: "{{ httpd_packages }}"
-        state: present
-        args:
-          - --noupdate
+    - name: Install httpd with no update
+      ansible.builtin.command:
+        cmd: dnf install --noupdate -y "{{ item }}"
+      loop: "{{ httpd_packages }}"
       become: true
 
-    - name: Install php
-      ansible.builtin.package:
-        name: "{{ php_packages }}"
-        state: present
-        args:
-          - --noupdate
+    # Install php
+    - name: Install php with no update
+      ansible.builtin.command:
+        cmd: dnf install --noupdate -y "{{ item }}"
+      loop: "{{ php_packages }}"
       become: true
 
     - name: Start httpd service
       systemd: name=httpd state=started enabled=yes
 
     # Install Mariadb
-    - name: Install mariadb
-      ansible.builtin.package:
-        name: "{{ mariadb_packages }}"
-        state: present
-        args:
-          - --noupdate
+    - name: Install mariadb with no update
+      ansible.builtin.command:
+        cmd: dnf install --noupdate -y "{{ item }}"
+      loop: "{{ mariadb_packages }}"
       become: true
 
     - name: Start mariadb service
@@ -252,12 +267,9 @@
       become: true
 
     # Install Nextcloud
-    - name: Install dependencies
-      ansible.builtin.package:
-        name: unzip
-        state: present
-        args:
-          - --noupdate
+    - name: Install dependencies with no update
+      ansible.builtin.command:
+        cmd: dnf install --noupdate -y unzip
       become: true
 
     - name: Install Nextcloud
@@ -321,12 +333,9 @@
       become: true
 
     # Install Firewall
-    - name: Install firewalld
-      ansible.builtin.package:
-        name: firewalld
-        state: present
-        args:
-          - --noupdate
+    - name: Install firewalld with no update
+      ansible.builtin.command:
+        cmd: dnf install --noupdate -y firewalld
       become: true
 
     - name: Start firewalld service
