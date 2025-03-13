@@ -195,7 +195,6 @@
       - "mariadb-server"
       - "python3-PyMySQL"
     mariadb_root_pass: "password"
-    # nextcloud_code: "https://download.nextcloud.com/server/releases/nextcloud-20.0.9.zip"
     nextcloud_code: "https://images.ablecloud.io/genie/nextcloud/nextcloud-25.0.13.zip"
     nextcloud_db_name: "nextcloud"
     nextcloud_db_user: "nextcloud"
@@ -204,14 +203,6 @@
     nextcloud_admin_pass: "password"
     nextcloud_data_dir: "/var/www/html/nextcloud/data"
   tasks:
-  
-    - name: Ensure upgrade_only=False in dnf.conf
-      lineinfile:
-        path: /etc/dnf/dnf.conf
-        regexp: '^upgrade_only='
-        line: 'upgrade_only=False'
-        create: yes
-      become: true
 
     - name: Add generated public key to authenticated keys
       lineinfile:
@@ -219,16 +210,16 @@
         line: "{{ lookup('env', 'AC_PUB_KEY') }}"
 
     # Install Httpd
-    - name: Install httpd with no update
+    - name: Install httpd without unnecessary updates
       ansible.builtin.command:
-        cmd: dnf install --nobest -y "{{ item }}"
+        cmd: dnf install --nobest --setopt=install_weak_deps=False -y "{{ item }}"
       loop: "{{ httpd_packages }}"
       become: true
 
     # Install php
-    - name: Install php with no update
+    - name: Install php without unnecessary updates
       ansible.builtin.command:
-        cmd: dnf install --nobest -y "{{ item }}"
+        cmd: dnf install --nobest --setopt=install_weak_deps=False -y "{{ item }}"
       loop: "{{ php_packages }}"
       become: true
 
@@ -236,9 +227,9 @@
       systemd: name=httpd state=started enabled=yes
 
     # Install Mariadb
-    - name: Install mariadb with no update
+    - name: Install mariadb without unnecessary updates
       ansible.builtin.command:
-        cmd: dnf install --nobest -y "{{ item }}"
+        cmd: dnf install --nobest --setopt=install_weak_deps=False -y "{{ item }}"
       loop: "{{ mariadb_packages }}"
       become: true
 
@@ -275,9 +266,9 @@
       become: true
 
     # Install Nextcloud
-    - name: Install dependencies with no update
+    - name: Install dependencies without unnecessary updates
       ansible.builtin.command:
-        cmd: dnf install --nobest -y unzip
+        cmd: dnf install --nobest --setopt=install_weak_deps=False -y unzip
       become: true
 
     - name: Install Nextcloud
@@ -341,9 +332,9 @@
       become: true
 
     # Install Firewall
-    - name: Install firewalld with no update
+    - name: Install firewalld without unnecessary updates
       ansible.builtin.command:
-        cmd: dnf install --nobest -y firewalld
+        cmd: dnf install --nobest --setopt=install_weak_deps=False -y firewalld
       become: true
 
     - name: Start firewalld service
@@ -359,3 +350,4 @@
       loop:
         - "http"
         - "https"
+        
