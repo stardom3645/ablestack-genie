@@ -4,6 +4,9 @@
   vars:
     base_path: 'genie'
     genie_ip: 'localhost'
+    genie_protocol: "{{ lookup('env', 'GENIE_PROTOCOL') | default('http', true) }}"
+    genie_port: "{{ lookup('env', 'GENIE_PORT') | default('80', true) }}"
+    genie_base_url: "{{ genie_protocol }}://{{ genie_ip }}:{{ genie_port }}"
   gather_facts: no
   tasks:
 
@@ -23,7 +26,7 @@
       credentials:
         - "Automation Controller Credential"
       state: "present"
-      controller_host: "http://{{ genie_ip }}:80"
+      controller_host: "{{ genie_base_url }}"
       controller_username: admin
       controller_password: "{{ admin_password.stdout }}"
       extra_vars: 
@@ -77,7 +80,7 @@
       credentials:
         - "Automation Controller Credential"
       state: "present"
-      controller_host: "http://{{ genie_ip }}:80"
+      controller_host: "{{ genie_base_url }}"
       controller_username: admin
       controller_password: "{{ admin_password.stdout }}"
       extra_vars: 
@@ -128,7 +131,7 @@
       credentials:
         - "Automation Controller Credential"
       state: "present"
-      controller_host: "http://{{ genie_ip }}:80"
+      controller_host: "{{ genie_base_url }}"
       controller_username: admin
       controller_password: "{{ admin_password.stdout }}"
       extra_vars: 
@@ -222,7 +225,7 @@
       credentials:
         - "Automation Controller Credential"
       state: "present"
-      controller_host: "http://{{ genie_ip }}:80"
+      controller_host: "{{ genie_base_url }}"
       controller_username: admin
       controller_password: "{{ admin_password.stdout }}"
       extra_vars:

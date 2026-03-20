@@ -31,6 +31,9 @@
     ee_image_name: 'AWX EE (genie_latest)'  # 커스터 마이징된 AWX EE 이미지 이름입니다.
     ee_image_path: 'ablecloudteam/genie-awx-ee'  # 커스터 마이징된 AWX EE 이미지 경로입니다.
     genie_ip: 'localhost' # Genie 대시보드 URL입니다.
+    genie_protocol: "{{ lookup('env', 'GENIE_PROTOCOL') | default('http', true) }}"
+    genie_port: "{{ lookup('env', 'GENIE_PORT') | default('80', true) }}"
+    genie_base_url: "{{ genie_protocol }}://{{ genie_ip }}:{{ genie_port }}"
   gather_facts: no
   tasks:
     - name: 패키지 설치
@@ -264,7 +267,7 @@
     - shell: kubectl proxy --address='0.0.0.0' --disable-filter=true  &> /dev/null &
     
     - name: Genie Dashboard 응답 대기 중 (약 2분 소요)
-      shell: curl -o /dev/null -s -w "%{http_code}\n" http://{{ genie_ip }}:80
+      shell: curl -o /dev/null -s -w "%{http_code}\n" {{ genie_base_url }}
       register: genie_return_code
       until: genie_return_code.stdout == "200"
       retries: 60
@@ -279,7 +282,7 @@
         password: "{{ genie_pass }}"
         superuser: yes
         state: present
-        controller_host: "http://{{ genie_ip }}:80"
+        controller_host: "{{ genie_base_url }}"
         controller_username: admin
         controller_password: "{{ admin_password.stdout }}"
       register: user_genie

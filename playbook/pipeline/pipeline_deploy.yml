@@ -8,6 +8,8 @@
     base_path: "genie"
     genie_ip: "localhost"
     default_timeout: 180
+    gitea_protocol: "{{ lookup('env', 'GITEA_PROTOCOL') | default('http', true) }}"
+    gitea_port: "{{ lookup('env', 'GITEA_PORT') | default('3000', true) }}"
   tasks:
 
   - name: debug uuid stdout
@@ -118,7 +120,7 @@
       regexp: "{{item.regexp}}"
       line: "{{item.line}}"
     with_items:
-      - {'regexp': '^ROOT_URL', line: 'ROOT_URL              = http://{{ inventory_hostname }}:3000'}
+      - {'regexp': '^ROOT_URL', line: 'ROOT_URL              = {{ gitea_protocol }}://{{ inventory_hostname }}:{{ gitea_port }}'}
 
   - name: Start gitea service
     systemd: name=gitea state=restarted
@@ -136,6 +138,10 @@
     # instance_nm: "{{ gitea_instance_name }}-{{ uuid }}"
     base_path: "genie"
     genie_ip: "localhost"
+    jenkins_protocol: "{{ lookup('env', 'JENKINS_PROTOCOL') | default('http', true) }}"
+    jenkins_port: "{{ lookup('env', 'JENKINS_PORT') | default('8080', true) }}"
+    gitea_protocol: "{{ lookup('env', 'GITEA_PROTOCOL') | default('http', true) }}"
+    gitea_port: "{{ lookup('env', 'GITEA_PORT') | default('3000', true) }}"
   tasks:
 
   - name: debug uuid stdout
@@ -227,7 +233,7 @@
         - {port: 80, protocol: tcp}
         - {port: 22, protocol: tcp}
         - {port: 3000, protocol: tcp}
-        - {port: 8080, protocol: tcp}
+        - {port: "{{ jenkins_port }}", protocol: tcp}
         - {port: 6443, protocol: tcp}
         - {port: 8443, protocol: tcp}
     delegate_to: localhost
@@ -264,7 +270,7 @@
   - name: Update MySQL Data (Webhook ip)
     community.mysql.mysql_query:
       query:
-      - UPDATE webhook SET url = "http://{{ inventory_hostname }}:8080/gitea-webhook/post?job=gxRest" WHERE id =1
+      - UPDATE webhook SET url = "{{ jenkins_protocol }}://{{ inventory_hostname }}:{{ jenkins_port }}/gitea-webhook/post?job=gxRest" WHERE id =1
       login_host: "{{ gitea_vm.instances[0].public_ip }}"
       login_db: "{{ login_db }}"
       login_user: "{{ login_user }}"
@@ -277,7 +283,7 @@
       regexp: "{{item.regexp}}"
       line: "{{item.line}}"
     with_items:
-      - {'regexp': '^      <serverUrl>', line: '      <serverUrl>http://{{ gitea_vm.instances[0].public_ip }}:3000</serverUrl>'}
+      - {'regexp': '^      <serverUrl>', line: '      <serverUrl>{{ gitea_protocol }}://{{ gitea_vm.instances[0].public_ip }}:{{ gitea_port }}</serverUrl>'}
 
   - name: Update jenkins file (gitea repo item)
     lineinfile:
@@ -285,7 +291,7 @@
       regexp: "{{item.regexp}}"
       line: "{{item.line}}"
     with_items:
-      - {'regexp': '^        <url>', line: '        <url>http://{{ gitea_vm.instances[0].public_ip }}:3000/ablecloud/ablecloud.git</url>'}
+      - {'regexp': '^        <url>', line: '        <url>{{ gitea_protocol }}://{{ gitea_vm.instances[0].public_ip }}:{{ gitea_port }}/ablecloud/ablecloud.git</url>'}
 
   - name: Update jenkins file (jenkins addr-1)
     lineinfile:
@@ -293,7 +299,7 @@
       regexp: "{{item.regexp}}"
       line: "{{item.line}}"
     with_items:
-      - {'regexp': '^      <jenkinsUrl>', line: '      <jenkinsUrl>http://{{ inventory_hostname }}:8080/</jenkinsUrl>'}
+      - {'regexp': '^      <jenkinsUrl>', line: '      <jenkinsUrl>{{ jenkins_protocol }}://{{ inventory_hostname }}:{{ jenkins_port }}/</jenkinsUrl>'}
 
   - name: Update jenkins file (jenkins addr-2)
     lineinfile:
@@ -301,7 +307,7 @@
       regexp: "{{item.regexp}}"
       line: "{{item.line}}"
     with_items:
-      - {'regexp': '^  <jenkinsUrl>', line: '  <jenkinsUrl>http://{{ inventory_hostname }}:8080/</jenkinsUrl>'}
+      - {'regexp': '^  <jenkinsUrl>', line: '  <jenkinsUrl>{{ jenkins_protocol }}://{{ inventory_hostname }}:{{ jenkins_port }}/</jenkinsUrl>'}
 
   - name: Update jenkins file (k8s addr)
     lineinfile:

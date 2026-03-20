@@ -6,6 +6,9 @@
     minikube_cpu: '2'
     minikube_ram: '3g'
     genie_ip: 'localhost'
+    genie_protocol: "{{ lookup('env', 'GENIE_PROTOCOL') | default('http', true) }}"
+    genie_port: "{{ lookup('env', 'GENIE_PORT') | default('80', true) }}"
+    genie_base_url: "{{ genie_protocol }}://{{ genie_ip }}:{{ genie_port }}"
     default_credential_id: '1'
     default_project_id: '6'
     default_inventory_id: '1'
@@ -121,7 +124,7 @@
         - 8001
 
     - name: Genie Dashboard waiting for response
-      shell: curl -o /dev/null -s -w "%{http_code}\n" http://{{ genie_ip }}:80
+      shell: curl -o /dev/null -s -w "%{http_code}\n" {{ genie_base_url }}
       register: genie_return_code
       until: genie_return_code.stdout == "200"
       retries: 50
@@ -149,13 +152,13 @@
             MOLD_DEFAULT_URL: "{{ MOLD_DEFAULT_URL }}"
             MOLD_DEFAULT_PORT: "{{ MOLD_DEFAULT_PORT }}"
             MOLD_DEFAULT_PROTOCOL: "{{ MOLD_DEFAULT_PROTOCOL[:-3] }}"
-        controller_host: "http://{{ genie_ip }}:80"
+        controller_host: "{{ genie_base_url }}"
         controller_username: admin
         controller_password: "{{ admin_password.stdout }}"
 
     - name: Delete default job template
       uri:
-        url: http://{{ genie_ip }}:80/api/v2/job_templates/{{ default_template_id }}/
+        url: "{{ genie_base_url }}/api/v2/job_templates/{{ default_template_id }}/"
         method: DELETE
         body_format: json
         user: admin
@@ -168,7 +171,7 @@
 
     - name: Change default credential name
       uri:
-        url: http://{{ genie_ip }}:80/api/v2/credentials/{{ default_credential_id }}/
+        url: "{{ genie_base_url }}/api/v2/credentials/{{ default_credential_id }}/"
         method: PATCH
         body_format: json
         user: admin
@@ -183,7 +186,7 @@
 
     - name: Delete default project
       uri:
-        url: http://{{ genie_ip }}:80/api/v2/projects/{{ default_project_id }}/
+        url: "{{ genie_base_url }}/api/v2/projects/{{ default_project_id }}/"
         method: DELETE
         body_format: json
         user: admin
@@ -194,7 +197,7 @@
 
     - name: Rename Default Inventory to Genie Inventory
       uri:
-        url: http://{{ genie_ip }}:80/api/v2/inventories/{{ default_inventory_id }}/
+        url: "{{ genie_base_url }}/api/v2/inventories/{{ default_inventory_id }}/"
         method: PATCH
         body_format: json
         user: admin
@@ -218,7 +221,7 @@
           {
             "days": "7"
           }
-        controller_host: "http://{{ genie_ip }}:80"
+        controller_host: "{{ genie_base_url }}"
         controller_username: admin
         controller_password: "{{ admin_password.stdout }}"
 
@@ -232,13 +235,13 @@
         inputs:
           username: root
           ssh_key_data: "{{ lookup('file', '/root/.ssh/id_rsa') }}"
-        controller_host: "http://{{ genie_ip }}:80"
+        controller_host: "{{ genie_base_url }}"
         controller_username: admin
         controller_password: "{{ admin_password.stdout }}"
 
     - name: Add host (automation controller) to genie_inventory (default inventory)
       uri:
-        url: http://{{ genie_ip }}:80/api/v2/inventories/{{ default_inventory_id }}/hosts/
+        url: "{{ genie_base_url }}/api/v2/inventories/{{ default_inventory_id }}/hosts/"
         method: POST
         body_format: json
         user: admin
@@ -253,7 +256,7 @@
 
     - name: Add group (genie_vm) to genie_inventory (default inventory)
       uri:
-        url: http://{{ genie_ip }}:80/api/v2/inventories/{{ default_inventory_id }}/groups/
+        url: "{{ genie_base_url }}/api/v2/inventories/{{ default_inventory_id }}/groups/"
         method: POST
         body_format: json
         user: admin
@@ -268,7 +271,7 @@
 
     - name: Add automation controller host to genie_vm group in genie_inventory (default inventory)
       uri:
-        url: http://{{ genie_ip }}:80/api/v2/groups/{{ group.json.id }}/hosts/
+        url: "{{ genie_base_url }}/api/v2/groups/{{ group.json.id }}/hosts/"
         method: POST
         body_format: json
         user: admin
@@ -309,7 +312,7 @@
         scm_branch: master
         scm_update_on_launch: no
         state: present
-        controller_host: "http://{{ genie_ip }}:80"
+        controller_host: "{{ genie_base_url }}"
         controller_username: admin
         controller_password: "{{ admin_password.stdout }}"
 
@@ -324,6 +327,6 @@
         credentials:
           - "Automation Controller Credential"
         state: "present"
-        controller_host: "http://{{ genie_ip }}:80"
+        controller_host: "{{ genie_base_url }}"
         controller_username: admin
         controller_password: "{{ admin_password.stdout }}"

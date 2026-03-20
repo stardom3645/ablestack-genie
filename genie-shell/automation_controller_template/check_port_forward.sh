@@ -1,8 +1,12 @@
 #!/bin/bash
 
+GENIE_PROTOCOL="${GENIE_PROTOCOL:-http}"
+GENIE_PORT="${GENIE_PORT:-80}"
+GENIE_BASE_URL="${GENIE_PROTOCOL}://localhost:${GENIE_PORT}"
+
 while [ 1 ]
 do
-    STATUS=$(curl -o /dev/null -w "%{http_code}" "http://localhost:80")
+    STATUS=$(curl -o /dev/null -w "%{http_code}" "${GENIE_BASE_URL}")
     pid_dashboard=`ps -ef | grep "kubectl port-forward svc/awx-service" | grep -v 'grep' | awk '{print $2}'`
     pid_postgres=`ps -ef | grep "kubectl port-forward svc/awx-postgres" | grep -v 'grep' | awk '{print $2}'`
     pid_proxy=`ps -ef | grep "kubectl proxy" | grep -v 'grep' | awk '{print $2}'`

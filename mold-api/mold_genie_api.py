@@ -254,7 +254,7 @@ if __name__ == '__main__':
 서비스 네임을 이용하여 리스트 정보 조회 기능
 python mold_genie_api.py \
 	-c listAutomationDeployedResource \
-	-ap http -ip 10.10.1.10 -p 8080 \
+	-ap <mold_protocol> -ip <mold_host> -p <mold_port> \
 	-ak api_key_value \
 	-sk secret_key_value \
 	-n ServiceName
@@ -262,19 +262,19 @@ python mold_genie_api.py \
 서비스 그룹 등록
 python mold_genie_api.py \
 	-c addDeployedResourceGroup \
-	-ap http -ip 10.10.1.10 -p 8080 \
+	-ap <mold_protocol> -ip <mold_host> -p <mold_port> \
 	-ak api_key_value \
 	-sk secret_key_value \
 	-zid zone_uuid \
     -acid automation_contriller_uuid \
 	-n ServiceName \
 	-d 'Service description' \
-    -ai 'http://ip:80으로 접속하세요.'
+    -ai '<service_access_url>로 접속하세요.'
 
 서비스 단위별 상태 등록
 python mold_genie_api.py \
 	-c addDeployedUnitResource \
-	-ap http -ip 10.10.1.10 -p 8080 \
+	-ap <mold_protocol> -ip <mold_host> -p <mold_port> \
 	-ak api_key_value \
 	-sk secret_key_value \
 	-gid group_id_or_uuid \
@@ -285,7 +285,7 @@ python mold_genie_api.py \
 서비스 그룹 상태정보 삭제 기능
 python mold_genie_api.py \
 	-c deleteDeployedResourceGroup \
-	-ap http -ip 10.10.1.10 -p 8080 \
+	-ap <mold_protocol> -ip <mold_host> -p <mold_port> \
 	-ak api_key_value \
 	-sk secret_key_value \
 	-zid zone_uuid \
@@ -294,7 +294,7 @@ python mold_genie_api.py \
 서비스 단위별 상태정보 삭제 기능
 python mold_genie_api.py \
 	-c deleteDeployedUnitResource \
-	-ap http -ip 10.10.1.10 -p 8080 \
+	-ap <mold_protocol> -ip <mold_host> -p <mold_port> \
 	-ak api_key_value \
 	-sk secret_key_value \
 	-gid group_uuid
@@ -302,11 +302,11 @@ python mold_genie_api.py \
 서비스 그룹 상태정보 업데이트 기능
 python mold_genie_api.py \
 	-c updateDeployedResourceGroup \
-	-ap http -ip 10.10.1.10 -p 8080 \
+	-ap <mold_protocol> -ip <mold_host> -p <mold_port> \
 	-ak api_key_value \
 	-sk secret_key_value \
 	-gid group_uuid \
 	-s Active \
-    -ai 'http://ip:80으로 접속하세요.'
+    -ai '<service_access_url>로 접속하세요.'
 
 '''

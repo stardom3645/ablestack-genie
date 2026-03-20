@@ -6,6 +6,9 @@
   vars:
     base_path: "genie"
     genie_ip: "localhost"
+    genie_protocol: "{{ lookup('env', 'GENIE_PROTOCOL') | default('http', true) }}"
+    genie_port: "{{ lookup('env', 'GENIE_PORT') | default('80', true) }}"
+    genie_base_url: "{{ genie_protocol }}://{{ genie_ip }}:{{ genie_port }}"
     default_timeout: 180
   tasks:
 
@@ -106,7 +109,7 @@
       credentials:
         - "Automation Controller Credential"
       state: "present"
-      controller_host: "http://{{ genie_ip }}:80"
+      controller_host: "{{ genie_base_url }}"
       controller_username: admin
       controller_password: "{{ admin_password.stdout }}"
       extra_vars:
@@ -125,7 +128,7 @@
       credentials:
         - "Automation Controller Credential"
       state: "present"
-      controller_host: "http://{{ genie_ip }}:80"
+      controller_host: "{{ genie_base_url }}"
       controller_username: admin
       controller_password: "{{ admin_password.stdout }}"
       extra_vars:
@@ -139,7 +142,7 @@
       state: present
       unified_job_template: 워드프레스 - 상태체크 - {{ uuid }}
       rrule: "DTSTART;TZID=Asia/Seoul:20220101T120000 RRULE:FREQ=MINUTELY;INTERVAL=2"
-      controller_host: "http://{{ genie_ip }}:80"
+      controller_host: "{{ genie_base_url }}"
       controller_username: admin
       controller_password: "{{ admin_password.stdout }}"
     delegate_to: "{{ lookup('env', 'AC_NETWORK_ADDRESS') }}"
@@ -318,4 +321,3 @@
 
   - name: Reload Firewall
     systemd: name=firewalld state=reloaded
-

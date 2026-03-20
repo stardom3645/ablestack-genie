@@ -5,6 +5,9 @@
   vars:
     service_group: "eGov-WebService-{{ uuid }}"
     default_timeout: 180
+    egov_service_protocol: "{{ lookup('env', 'EGOV_SERVICE_PROTOCOL') | default('http', true) }}"
+    egov_service_port: "{{ lookup('env', 'EGOV_SERVICE_PORT') | default('8080', true) }}"
+    egov_service_url: "{{ egov_service_protocol }}://{{ web_vm.instances[0].public_ip }}:{{ egov_service_port }}"
   tasks:
 
   ### Info VirtualMachine ###
@@ -69,7 +72,7 @@
       -acid "{{ lookup('env', 'AC_ID') }}" \
       -n "{{ service_group }}" \
       -d "The servers are physically divided into three layers and consisted of WEB Server (client layer), WAS Server (application layer), and DB Server (data layer)." \
-      -ai "<a href='http://{{ web_vm.instances[0].public_ip }}:8080' target='_blank'> http://{{ web_vm.instances[0].public_ip }}:8080</a>" \
+      -ai "<a href='{{ egov_service_url }}' target='_blank'> {{ egov_service_url }}</a>" \
     when: list_jsondata.listautomationdeployedresourceresponse == {}
 
   - name: Check group2
@@ -189,7 +192,7 @@
       -ak "{{ lookup('env', 'MOLD_API_KEY') }}" \
       -sk "{{ lookup('env', 'MOLD_SECRET_KEY') }}" \
       -gid "{{ list2_jsondata.listautomationdeployedresourceresponse.automationdeployedresource[0].id }}" \
-      -ai "<a href='http://{{ web_vm.instances[0].public_ip }}:8080' target='_blank'> http://{{ web_vm.instances[0].public_ip }}:8080</a>" \
+      -ai "<a href='{{ egov_service_url }}' target='_blank'> {{ egov_service_url }}</a>" \
       -s "Active"
     when: mysqld_state_result.stdout == "active" and tomcat_state_result.stdout == "active" and nginx_state_result.stdout == "active"
 
@@ -200,6 +203,6 @@
       -ak "{{ lookup('env', 'MOLD_API_KEY') }}" \
       -sk "{{ lookup('env', 'MOLD_SECRET_KEY') }}" \
       -gid "{{ list2_jsondata.listautomationdeployedresourceresponse.automationdeployedresource[0].id }}" \
-      -ai "<a href='http://{{ web_vm.instances[0].public_ip }}:8080' target='_blank'> http://{{ web_vm.instances[0].public_ip }}:8080</a>" \
+      -ai "<a href='{{ egov_service_url }}' target='_blank'> {{ egov_service_url }}</a>" \
       -s "Inactive"
     when: mysqld_state_result.stdout != "active" or tomcat_state_result.stdout != "active" or nginx_state_result.stdout != "active"
