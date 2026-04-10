@@ -104,6 +104,20 @@
         end_port: 65535
       ignore_errors: yes
 
+    - name: Automation Controller Egress Settings (UDP)
+      cs_firewall:
+        network: "{{ AC_NETWORK_NAME }}"
+        api_url: "{{ MOLD_API_URL }}"
+        api_key: "{{ MOLD_API_KEY }}"
+        api_secret: "{{ MOLD_SECRET_KEY }}"
+        zone: "{{ MOLD_ZONE_NAME }}"
+        api_timeout: "{{ default_timeout }}"
+        protocol: udp
+        type: egress
+        start_port: 1
+        end_port: 65535
+      ignore_errors: yes
+
     - name: Automation Controller Port forward Rule Settings
       cs_portforward:
         network: "{{ AC_NETWORK_NAME }}"
@@ -256,7 +270,6 @@
             "description": "오토메이션 컨트롤러의 IP입니다."
           }
         status_code: 201
-      ignore_errors: yes
 
     - name: Add group (genie_vm) to genie_inventory (default inventory)
       uri:
@@ -272,7 +285,6 @@
           }
         status_code: 201
       register: group
-      ignore_errors: yes
 
     - name: Add automation controller host to genie_vm group in genie_inventory (default inventory)
       uri:
@@ -288,7 +300,6 @@
             "inventory": "{{ default_inventory_id }}"
           }
         status_code: 204
-      ignore_errors: yes
 
     # - name: Create a Genie remote repository project
     #   uri:
