@@ -1,31 +1,48 @@
 #!/bin/bash
 
-while [ 1 ]
-do
-    STATUS=$(curl -o /dev/null -w "%{http_code}" "http://localhost:80")
-    pid_dashboard=`ps -ef | grep "kubectl port-forward svc/awx-service" | grep -v 'grep' | awk '{print $2}'`
-    pid_postgres=`ps -ef | grep "kubectl port-forward svc/awx-postgres" | grep -v 'grep' | awk '{print $2}'`
-    pid_proxy=`ps -ef | grep "kubectl proxy" | grep -v 'grep' | awk '{print $2}'`
+readonly DASHBOARD_PATTERN="kubectl port-forward svc/awx-service"
+readonly POSTGRES_PATTERN="kubectl port-forward svc/awx-postgres"
+readonly PROXY_PATTERN="kubectl proxy --address=0.0.0.0"
+dashboard_failures=0
 
-    if [ $STATUS -ne 200 ]
-    then
-        kill `ps -ef | grep 'kubectl port-forward' | grep -v grep | awk '{print $2}'`
+start_dashboard_forward() {
+    nohup kubectl port-forward svc/awx-service -n awx --address 0.0.0.0 80:80 >> /var/log/genie-port-forward.log 2>&1 &
+}
+
+start_postgres_forward() {
+    nohup kubectl port-forward svc/awx-postgres -n awx --address 0.0.0.0 5432:5432 >> /var/log/genie-port-forward.log 2>&1 &
+}
+
+start_kubernetes_proxy() {
+    nohup kubectl proxy --address=0.0.0.0 --disable-filter=true >> /var/log/genie-port-forward.log 2>&1 &
+}
+
+while true; do
+    if pgrep -f "${DASHBOARD_PATTERN}" > /dev/null; then
+        if curl --silent --fail --max-time 5 --output /dev/null http://localhost:80/api/v2/ping/; then
+            dashboard_failures=0
+        else
+            dashboard_failures=$((dashboard_failures + 1))
+        fi
+
+        if [ "${dashboard_failures}" -ge 3 ]; then
+            pkill -f "${DASHBOARD_PATTERN}" || true
+            dashboard_failures=0
+            sleep 2
+            start_dashboard_forward
+        fi
+    else
+        dashboard_failures=0
+        start_dashboard_forward
     fi
 
-    if [ -z $pid_dashboard ]
-    then
-        nohup kubectl port-forward svc/awx-service -n awx --address 0.0.0.0 80:80 &> /dev/null &
+    if ! pgrep -f "${POSTGRES_PATTERN}" > /dev/null; then
+        start_postgres_forward
     fi
 
-    if [ -z $pid_postgres ]
-    then
-        nohup kubectl port-forward svc/awx-postgres -n awx --address 0.0.0.0 5432:5432 &> /dev/null &
+    if ! pgrep -f "${PROXY_PATTERN}" > /dev/null; then
+        start_kubernetes_proxy
     fi
 
-    if [ -z $pid_proxy ]
-    then
-        nohup kubectl proxy --address='0.0.0.0' --disable-filter=true  &> /dev/null &
-    fi
-    
-    sleep 2
+    sleep 5
 done

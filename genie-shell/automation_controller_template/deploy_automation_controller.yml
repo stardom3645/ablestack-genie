@@ -118,6 +118,20 @@
         end_port: 65535
       ignore_errors: yes
 
+    - name: Automation Controller Ingress Settings (UDP)
+      cs_firewall:
+        ip_address: "{{ AC_PUBLIC_IP }}"
+        api_url: "{{ MOLD_API_URL }}"
+        api_key: "{{ MOLD_API_KEY }}"
+        api_secret: "{{ MOLD_SECRET_KEY }}"
+        zone: "{{ MOLD_ZONE_NAME }}"
+        api_timeout: "{{ default_timeout }}"
+        protocol: udp
+        type: ingress
+        start_port: 1
+        end_port: 65535
+      ignore_errors: yes
+
     - name: Automation Controller Port forward Rule Settings
       cs_portforward:
         network: "{{ AC_NETWORK_NAME }}"

@@ -1,27 +1,22 @@
 #!/bin/bash
 
 CMD="$1"
-pid_proxy=`ps -ef | grep "kubectl proxy" | grep -v 'grep' | awk '{print $2}'`
 
-if [ "$CMD" == "start" ] ; then
+if [ "${CMD}" = "start" ]; then
 
-    ansible-playbook /root/deploy_automation_controller.yml --tag "start minikube"  
+    ansible-playbook /root/deploy_automation_controller.yml --tags "start minikube"
 
-elif [ "$CMD" == "stop" ] ; then 
+elif [ "${CMD}" = "stop" ]; then
+    pkill -f "kubectl proxy" || true
+    minikube stop
 
-    minikube stop 
-
-elif [ "$CMD" == "status" ] ; then
+elif [ "${CMD}" = "status" ]; then
 
     minikube status
 
 else
 
-    exit
+    echo "Usage: $0 {start|stop|status}" >&2
+    exit 2
 
 fi
-
-if [ -n $pid_proxy ] ; then
-    kill -9 $pid_proxy
-fi
-

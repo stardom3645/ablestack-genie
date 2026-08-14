@@ -1,11 +1,14 @@
-[Unit] 
-Description =  Check port_forward 
-After = network.target 
+[Unit]
+Description=Genie port-forward health monitor
+Wants=network-online.target
+After=network-online.target docker.service genie_cluster.service
 
-[Service] 
+[Service]
+Type=simple
 User=root
-Restart=on-failure
+Restart=always
+RestartSec=5
 ExecStart=/genie/check_port_forward/check_port_forward.sh
 
-[Install] 
+[Install]
 WantedBy=multi-user.target

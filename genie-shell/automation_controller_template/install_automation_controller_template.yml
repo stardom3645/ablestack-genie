@@ -293,3 +293,9 @@
     - name: result minikube
       debug: 
         msg: "Genie VM 템플릿 배포 완료"
+
+    # A captured template must not retain the builder VM's cloud-init instance
+    # state. Otherwise clones can skip config-drive user-data as already run.
+    - name: Automation Controller 템플릿 cloud-init 상태 초기화
+      command: cloud-init clean --logs
+      changed_when: true
