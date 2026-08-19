@@ -384,9 +384,31 @@
       url_password: "{{ image_server_password }}"
       force_basic_auth: yes
     no_log: true
-    
-  - name: Start tomcat service
-    systemd: name=tomcat state=restarted enabled=yes
+
+  - name: Resolve installed Java executable
+    command: readlink -f /usr/bin/java
+    register: java_executable
+    changed_when: false
+
+  - name: Set Tomcat JAVA_HOME
+    lineinfile:
+      path: /etc/systemd/system/tomcat.service
+      regexp: '^Environment=JAVA_HOME='
+      line: "Environment=JAVA_HOME={{ java_executable.stdout | dirname | dirname }}"
+
+  - name: Reload systemd units
+    systemd:
+      daemon_reload: yes
+
+  - name: Stop Tomcat before application deployment
+    systemd:
+      name: tomcat
+      state: stopped
+
+  - name: Remove stale Tomcat PID file
+    file:
+      path: /usr/local/apache-tomcat-9.0.65/temp/tomcat.pid
+      state: absent
 
   - name: Delete ROOT Directory
     command: rm -rf /usr/local/apache-tomcat-9.0.65/webapps/ROOT
@@ -428,7 +450,11 @@
   #     before: "dbserver"
 
   - name: Start tomcat service
-    systemd: name=tomcat state=restarted
+    systemd:
+      name: tomcat
+      state: started
+      enabled: yes
+      daemon_reload: yes
 
   - name: Allow port
     ansible.posix.firewalld:
