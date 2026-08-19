@@ -302,8 +302,12 @@
 
     - name: Download sql file
       get_url:
-        url: "http://images.ablecloud.io/Genie/eGovFrame/db.sql"
+        url: "https://images.ablecloud.io/Genie/eGovFrame/db.sql"
         dest: /tmp/
+        url_username: "{{ image_server_username }}"
+        url_password: "{{ image_server_password }}"
+        force_basic_auth: yes
+      no_log: true
 
     - name: Restore database
       community.mysql.mysql_db:
@@ -354,10 +358,19 @@
   - name: Install unzip Packages
     yum: name=unzip update_cache=yes state=latest
 
-  - name: Download and Unarchive Tomcat
+  - name: Download Tomcat archive
+    ansible.builtin.get_url:
+      url: "https://images.ablecloud.io/Genie/eGovFrame/apache-tomcat-9.0.65.tar.gz"
+      dest: /tmp/apache-tomcat-9.0.65.tar.gz
+      url_username: "{{ image_server_username }}"
+      url_password: "{{ image_server_password }}"
+      force_basic_auth: yes
+      mode: "0600"
+    no_log: true
+
+  - name: Unarchive Tomcat
     ansible.builtin.unarchive:
-      # src: "https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.64/bin/apache-tomcat-9.0.64.tar.gz"
-      src: "http://images.ablecloud.io/Genie/eGovFrame/apache-tomcat-9.0.65.tar.gz"
+      src: /tmp/apache-tomcat-9.0.65.tar.gz
       dest: /usr/local
       remote_src: yes
       # extra_opts: "--strip-components=1"
@@ -365,8 +378,12 @@
 
   - name: Download Tomcat service file
     get_url:
-      url: "http://images.ablecloud.io/Genie/eGovFrame/tomcat.service"
+      url: "https://images.ablecloud.io/Genie/eGovFrame/tomcat.service"
       dest: "/etc/systemd/system/"
+      url_username: "{{ image_server_username }}"
+      url_password: "{{ image_server_password }}"
+      force_basic_auth: yes
+    no_log: true
     
   - name: Start tomcat service
     systemd: name=tomcat state=restarted enabled=yes
@@ -379,8 +396,12 @@
 
   - name: Download ROOT.war
     get_url:
-      url: "http://images.ablecloud.io/Genie/eGovFrame/ROOT.war"
+      url: "https://images.ablecloud.io/Genie/eGovFrame/ROOT.war"
       dest: "/usr/local/apache-tomcat-9.0.65/webapps/"
+      url_username: "{{ image_server_username }}"
+      url_password: "{{ image_server_password }}"
+      force_basic_auth: yes
+    no_log: true
 
   # - name: 배포한 DB 가상머신 정보 수집 ({{ db_instance_nm }})
   #   cs_instance_info:
@@ -447,8 +468,12 @@
 
   - name: Download nginx-was conf file
     get_url:
-      url: "http://images.ablecloud.io/Genie/eGovFrame/nginx-was.conf"
+      url: "https://images.ablecloud.io/Genie/eGovFrame/nginx-was.conf"
       dest: "/etc/nginx/conf.d/"
+      url_username: "{{ image_server_username }}"
+      url_password: "{{ image_server_password }}"
+      force_basic_auth: yes
+    no_log: true
   
   # - name: 배포한 가상머신 정보 수집("{{ was_instance_nm }}")
   #   cs_instance_info:
@@ -486,8 +511,12 @@
   # css, images file download
   - name: Download css file
     get_url:
-      url: "http://images.ablecloud.io/Genie/eGovFrame/css.zip"
+      url: "https://images.ablecloud.io/Genie/eGovFrame/css.zip"
       dest: "/tmp/css.zip"
+      url_username: "{{ image_server_username }}"
+      url_password: "{{ image_server_password }}"
+      force_basic_auth: yes
+    no_log: true
   - name: Extract css archive
     ansible.builtin.unarchive:
       src: "/tmp/css.zip"
@@ -496,8 +525,12 @@
 
   - name: Download images file
     get_url:
-      url: "http://images.ablecloud.io/Genie/eGovFrame/images.zip"
+      url: "https://images.ablecloud.io/Genie/eGovFrame/images.zip"
       dest: "/tmp/images.zip"
+      url_username: "{{ image_server_username }}"
+      url_password: "{{ image_server_password }}"
+      force_basic_auth: yes
+    no_log: true
   - name: Extract images archive
     ansible.builtin.unarchive:
       src: "/tmp/images.zip"

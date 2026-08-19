@@ -270,8 +270,8 @@
     get_url:
       url: https://images.ablecloud.io/Genie/wordpress/wordpress-6.0.1.tar.gz
       dest: /tmp/wordpress-6.0.1.tar.gz
-      url_username: "{{ wordpress_download_username }}"
-      url_password: "{{ wordpress_download_password }}"
+      url_username: "{{ image_server_username }}"
+      url_password: "{{ image_server_password }}"
       force_basic_auth: yes
       mode: "0600"
     no_log: true
@@ -308,7 +308,7 @@
       line: "{{item.line}}"
     with_items:
       - {'regexp': "define\\( 'DB_NAME', '(.)+' \\);", 'line': "define( 'DB_NAME', '{{mysql_db}}' );"}
-      - {'regexp': "define\\( 'DB_USER', '(.)+' \\);", 'line': "define( 'DB_USER', '{{mysql_user}}' );"}
+      - {'regexp': "define\\( 'DB_USER', '(.)+' \\);", 'line': "define( 'DB_USER', '{{mysql_user}}' );"}트
       - {'regexp': "define\\( 'DB_PASSWORD', '(.)+' \\);", 'line': "define( 'DB_PASSWORD', '{{mysql_password}}' );"}
 
   - name: Restart httpd service
