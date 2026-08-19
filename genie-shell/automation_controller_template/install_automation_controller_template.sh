@@ -62,5 +62,16 @@ chmod -R 755 /etc/systemd/system/genie_cluster.service
 systemctl daemon-reload
 systemctl enable genie_cluster
 
+### Genie Bootstrap Service 설정
+# Mold의 cloud-init runcmd가 플레이북 다운로드 후 조기 종료되더라도,
+# cloud-final 완료 뒤 배포 플레이북을 이어서 실행한다.
+mkdir -p /genie/bootstrap
+cp "$HERE/genie_bootstrap.sh" /genie/bootstrap/
+cp "$HERE/genie_bootstrap.service" /etc/systemd/system/
+chmod 755 /genie/bootstrap/genie_bootstrap.sh
+chmod 644 /etc/systemd/system/genie_bootstrap.service
+systemctl daemon-reload
+systemctl enable genie_bootstrap.service
+
 ### Genie VM 템플릿 배포 Playbook 실행
 ansible-playbook $HERE/install_automation_controller_template.yml

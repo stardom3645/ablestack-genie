@@ -161,8 +161,28 @@
       until: kubectl_get_pod_storage_provisioner.stdout == "Running"
       retries: 15
 
-    - name: kustomization.yml 초기화 
-      shell: rm -f {{base_path}}/awx-operator/kustomization.yml
+    # The VM can reach Quay while the nested Minikube node cannot in some
+    # isolated networks. Pull through the host and preload the node cache.
+    - name: AWX Operator 이미지 호스트 다운로드
+      command: docker pull {{ item }}
+      loop:
+        - quay.io/ansible/awx-operator:{{ awx_operator_version }}
+        - quay.io/brancz/kube-rbac-proxy:v0.8.0
+      register: awx_operator_image_pull
+      until: awx_operator_image_pull.rc == 0
+      retries: 5
+      delay: 10
+
+    - name: AWX Operator 이미지 Minikube 로드
+      command: minikube image load {{ item }}
+      loop:
+        - quay.io/ansible/awx-operator:{{ awx_operator_version }}
+        - quay.io/brancz/kube-rbac-proxy:v0.8.0
+
+    - name: kustomization.yml 초기화
+      file:
+        path: /{{ base_path }}/awx-operator/kustomization.yml
+        state: absent
 
     - name: kustomization.yml 생성
       lineinfile:
@@ -186,6 +206,9 @@
       shell: 
         cmd: kustomize build . | kubectl apply -f -
         chdir: "/{{ base_path }}/awx-operator/"
+
+    - name: AWX CRD 등록 대기
+      command: kubectl wait --for=condition=Established crd/awxs.awx.ansible.com --timeout=120s
 
     - name: AWX Operator Pod 배포 중
       wait_for:

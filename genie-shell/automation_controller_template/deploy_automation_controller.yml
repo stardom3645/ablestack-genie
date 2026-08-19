@@ -361,3 +361,9 @@
         controller_host: "http://{{ genie_ip }}:80"
         controller_username: admin
         controller_password: "{{ admin_password.stdout }}"
+
+    - name: Mark Automation Controller bootstrap as completed
+      file:
+        path: /genie/bootstrap.complete
+        state: touch
+        mode: '0644'
